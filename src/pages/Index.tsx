@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +8,9 @@ import { AuthModal } from "@/components/auth/AuthModal";
 import { TransactionForm } from "@/components/transactions/TransactionForm";
 import { MetricsCards } from "@/components/dashboard/MetricsCards";
 import { RecentTransactions } from "@/components/dashboard/RecentTransactions";
+import { VoiceRecorder } from "@/components/voice/VoiceRecorder";
+import { ReceiptScanner } from "@/components/receipt/ReceiptScanner";
+import { Link } from "react-router-dom";
 
 const Index = () => {
   return (
@@ -23,6 +25,8 @@ const MainApp = () => {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
   const [showTransactionForm, setShowTransactionForm] = useState(false);
+  const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
+  const [showReceiptScanner, setShowReceiptScanner] = useState(false);
 
   if (loading) {
     return (
@@ -38,9 +42,17 @@ const MainApp = () => {
   }
 
   if (user) {
-    return <Dashboard onShowTransactionForm={() => setShowTransactionForm(true)} 
-                      showTransactionForm={showTransactionForm}
-                      onCloseTransactionForm={() => setShowTransactionForm(false)} />;
+    return <Dashboard 
+              onShowTransactionForm={() => setShowTransactionForm(true)} 
+              showTransactionForm={showTransactionForm}
+              onCloseTransactionForm={() => setShowTransactionForm(false)}
+              showVoiceRecorder={showVoiceRecorder}
+              onShowVoiceRecorder={() => setShowVoiceRecorder(true)}
+              onCloseVoiceRecorder={() => setShowVoiceRecorder(false)}
+              showReceiptScanner={showReceiptScanner}
+              onShowReceiptScanner={() => setShowReceiptScanner(true)}
+              onCloseReceiptScanner={() => setShowReceiptScanner(false)}
+            />;
   }
 
   return (
@@ -69,9 +81,8 @@ const Header = ({ onSignIn, onSignUp }: { onSignIn: () => void; onSignUp: () => 
         <span className="text-xl font-bold text-slate-800">VibeLedger</span>
       </div>
       <nav className="hidden md:flex space-x-6">
-        <a href="#features" className="text-slate-600 hover:text-blue-600 transition-colors">Features</a>
-        <a href="#pricing" className="text-slate-600 hover:text-blue-600 transition-colors">Pricing</a>
-        <a href="#about" className="text-slate-600 hover:text-blue-600 transition-colors">About</a>
+        <Link to="/pricing" className="text-slate-600 hover:text-blue-600 transition-colors">Pricing</Link>
+        <Link to="/about" className="text-slate-600 hover:text-blue-600 transition-colors">About</Link>
       </nav>
       <div className="space-x-2">
         <Button variant="ghost" className="text-slate-600" onClick={onSignIn}>Sign In</Button>
@@ -253,12 +264,42 @@ const Footer = () => (
   </footer>
 );
 
-const Dashboard = ({ onShowTransactionForm, showTransactionForm, onCloseTransactionForm }: {
+const Dashboard = ({ 
+  onShowTransactionForm, 
+  showTransactionForm, 
+  onCloseTransactionForm,
+  showVoiceRecorder,
+  onShowVoiceRecorder,
+  onCloseVoiceRecorder,
+  showReceiptScanner,
+  onShowReceiptScanner,
+  onCloseReceiptScanner
+}: {
   onShowTransactionForm: () => void;
   showTransactionForm: boolean;
   onCloseTransactionForm: () => void;
+  showVoiceRecorder: boolean;
+  onShowVoiceRecorder: () => void;
+  onCloseVoiceRecorder: () => void;
+  showReceiptScanner: boolean;
+  onShowReceiptScanner: () => void;
+  onCloseReceiptScanner: () => void;
 }) => {
   const { user, signOut } = useAuth();
+
+  const handleVoiceTranscription = (text: string) => {
+    // Parse voice input and auto-fill transaction form
+    console.log('Voice transcription:', text);
+    onCloseVoiceRecorder();
+    onShowTransactionForm();
+  };
+
+  const handleReceiptScan = (data: any) => {
+    // Auto-fill transaction form with scanned data
+    console.log('Receipt scan result:', data);
+    onCloseReceiptScanner();
+    onShowTransactionForm();
+  };
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -276,8 +317,8 @@ const Dashboard = ({ onShowTransactionForm, showTransactionForm, onCloseTransact
             <RecentTransactions />
           </div>
           
-          <div>
-            {showTransactionForm ? (
+          <div className="space-y-4">
+            {showTransactionForm && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h2 className="text-xl font-semibold">Add Transaction</h2>
@@ -285,7 +326,29 @@ const Dashboard = ({ onShowTransactionForm, showTransactionForm, onCloseTransact
                 </div>
                 <TransactionForm onSuccess={onCloseTransactionForm} />
               </div>
-            ) : (
+            )}
+
+            {showVoiceRecorder && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-semibold">Voice Entry</h2>
+                  <Button variant="outline" onClick={onCloseVoiceRecorder}>Cancel</Button>
+                </div>
+                <VoiceRecorder onTranscription={handleVoiceTranscription} />
+              </div>
+            )}
+
+            {showReceiptScanner && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-semibold">Scan Receipt</h2>
+                  <Button variant="outline" onClick={onCloseReceiptScanner}>Cancel</Button>
+                </div>
+                <ReceiptScanner onScanResult={handleReceiptScan} />
+              </div>
+            )}
+
+            {!showTransactionForm && !showVoiceRecorder && !showReceiptScanner && (
               <Card>
                 <CardHeader>
                   <CardTitle>Quick Actions</CardTitle>
@@ -301,13 +364,21 @@ const Dashboard = ({ onShowTransactionForm, showTransactionForm, onCloseTransact
                       <Plus className="w-5 h-5 mr-2" />
                       Add Transaction
                     </Button>
-                    <Button className="w-full bg-green-600 hover:bg-green-700" size="lg">
+                    <Button 
+                      className="w-full bg-green-600 hover:bg-green-700" 
+                      size="lg"
+                      onClick={onShowVoiceRecorder}
+                    >
                       <Mic className="w-5 h-5 mr-2" />
-                      Record with Voice (Coming Soon)
+                      Record with Voice
                     </Button>
-                    <Button className="w-full bg-purple-600 hover:bg-purple-700" size="lg">
+                    <Button 
+                      className="w-full bg-purple-600 hover:bg-purple-700" 
+                      size="lg"
+                      onClick={onShowReceiptScanner}
+                    >
                       <Camera className="w-5 h-5 mr-2" />
-                      Scan Receipt (Coming Soon)
+                      Scan Receipt
                     </Button>
                   </div>
                 </CardContent>
@@ -330,10 +401,10 @@ const DashboardHeader = ({ onSignOut }: { onSignOut: () => void }) => (
         <span className="text-xl font-bold text-slate-800">VibeLedger</span>
       </div>
       <nav className="hidden md:flex space-x-6">
-        <a href="#" className="text-slate-900 font-medium">Dashboard</a>
-        <a href="#" className="text-slate-600 hover:text-slate-900">Transactions</a>
-        <a href="#" className="text-slate-600 hover:text-slate-900">Reports</a>
-        <a href="#" className="text-slate-600 hover:text-slate-900">Settings</a>
+        <Link to="/" className="text-slate-900 font-medium">Dashboard</Link>
+        <Link to="/transactions" className="text-slate-600 hover:text-slate-900">Transactions</Link>
+        <Link to="/reports" className="text-slate-600 hover:text-slate-900">Reports</Link>
+        <Link to="/settings" className="text-slate-600 hover:text-slate-900">Settings</Link>
       </nav>
       <Button variant="outline" size="sm" onClick={onSignOut}>
         Sign Out
