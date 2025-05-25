@@ -9,7 +9,102 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      custom_categories: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          id: string
+          name: string
+          type: Database["public"]["Enums"]["transaction_type"]
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          id?: string
+          name: string
+          type: Database["public"]["Enums"]["transaction_type"]
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          id?: string
+          name?: string
+          type?: Database["public"]["Enums"]["transaction_type"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          full_name: string | null
+          id: string
+          language: string | null
+          phone: string | null
+          updated_at: string | null
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id: string
+          language?: string | null
+          phone?: string | null
+          updated_at?: string | null
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string
+          language?: string | null
+          phone?: string | null
+          updated_at?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          category: Database["public"]["Enums"]["transaction_category"]
+          created_at: string | null
+          date: string
+          description: string
+          id: string
+          type: Database["public"]["Enums"]["transaction_type"]
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          category: Database["public"]["Enums"]["transaction_category"]
+          created_at?: string | null
+          date?: string
+          description: string
+          id?: string
+          type: Database["public"]["Enums"]["transaction_type"]
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: Database["public"]["Enums"]["transaction_category"]
+          created_at?: string | null
+          date?: string
+          description?: string
+          id?: string
+          type?: Database["public"]["Enums"]["transaction_type"]
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +113,17 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      transaction_category:
+        | "sales"
+        | "services"
+        | "other_income"
+        | "transport"
+        | "supplies"
+        | "utilities"
+        | "rent"
+        | "food"
+        | "other_expense"
+      transaction_type: "income" | "expense"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +238,19 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      transaction_category: [
+        "sales",
+        "services",
+        "other_income",
+        "transport",
+        "supplies",
+        "utilities",
+        "rent",
+        "food",
+        "other_expense",
+      ],
+      transaction_type: ["income", "expense"],
+    },
   },
 } as const

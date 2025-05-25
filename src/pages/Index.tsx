@@ -1,28 +1,64 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowDown, ArrowUp, Mic, Camera, TrendingUp, Shield, Globe, Users } from "lucide-react";
+import { ArrowDown, ArrowUp, Mic, Camera, TrendingUp, Shield, Globe, Users, Plus } from "lucide-react";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { AuthModal } from "@/components/auth/AuthModal";
+import { TransactionForm } from "@/components/transactions/TransactionForm";
+import { MetricsCards } from "@/components/dashboard/MetricsCards";
+import { RecentTransactions } from "@/components/dashboard/RecentTransactions";
 
 const Index = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  return (
+    <AuthProvider>
+      <MainApp />
+    </AuthProvider>
+  );
+};
 
-  if (isLoggedIn) {
-    return <Dashboard />;
+const MainApp = () => {
+  const { user, loading, signOut } = useAuth();
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
+  const [showTransactionForm, setShowTransactionForm] = useState(false);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-green-600 rounded-lg flex items-center justify-center mx-auto mb-4">
+            <TrendingUp className="w-5 h-5 text-white" />
+          </div>
+          <p className="text-slate-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (user) {
+    return <Dashboard onShowTransactionForm={() => setShowTransactionForm(true)} 
+                      showTransactionForm={showTransactionForm}
+                      onCloseTransactionForm={() => setShowTransactionForm(false)} />;
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      <Header />
-      <Hero setIsLoggedIn={setIsLoggedIn} />
+      <Header onSignIn={() => { setAuthMode('signin'); setAuthModalOpen(true); }}
+              onSignUp={() => { setAuthMode('signup'); setAuthModalOpen(true); }} />
+      <Hero onGetStarted={() => { setAuthMode('signup'); setAuthModalOpen(true); }} />
       <Features />
       <Footer />
+      <AuthModal 
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        initialMode={authMode}
+      />
     </div>
   );
 };
 
-const Header = () => (
+const Header = ({ onSignIn, onSignUp }: { onSignIn: () => void; onSignUp: () => void }) => (
   <header className="border-b border-slate-200 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
     <div className="container mx-auto px-4 py-4 flex justify-between items-center">
       <div className="flex items-center space-x-2">
@@ -37,14 +73,14 @@ const Header = () => (
         <a href="#about" className="text-slate-600 hover:text-blue-600 transition-colors">About</a>
       </nav>
       <div className="space-x-2">
-        <Button variant="ghost" className="text-slate-600">Sign In</Button>
-        <Button className="bg-blue-600 hover:bg-blue-700">Get Started</Button>
+        <Button variant="ghost" className="text-slate-600" onClick={onSignIn}>Sign In</Button>
+        <Button className="bg-blue-600 hover:bg-blue-700" onClick={onSignUp}>Get Started</Button>
       </div>
     </div>
   </header>
 );
 
-const Hero = ({ setIsLoggedIn }: { setIsLoggedIn: (value: boolean) => void }) => (
+const Hero = ({ onGetStarted }: { onGetStarted: () => void }) => (
   <section className="container mx-auto px-4 py-20 text-center">
     <Badge className="mb-4 bg-blue-100 text-blue-700 hover:bg-blue-200">
       🚀 Now with AI-powered insights
@@ -63,7 +99,7 @@ const Hero = ({ setIsLoggedIn }: { setIsLoggedIn: (value: boolean) => void }) =>
       <Button 
         size="lg" 
         className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-3"
-        onClick={() => setIsLoggedIn(true)}
+        onClick={onGetStarted}
       >
         Start Trading Smarter
       </Button>
@@ -169,96 +205,121 @@ const FeatureCard = ({ icon, title, description, color }: {
   );
 };
 
-const Dashboard = () => (
-  <div className="min-h-screen bg-slate-50">
-    <DashboardHeader />
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">Welcome back, Trader!</h1>
-        <p className="text-slate-600">Here's your trading performance today.</p>
-      </div>
-      
-      <div className="grid md:grid-cols-3 gap-6 mb-8">
-        <MetricCard
-          title="Today's Profit"
-          value="$284.50"
-          change="+12.5%"
-          trend="up"
-          color="green"
-        />
-        <MetricCard
-          title="Total Income"
-          value="$1,247.80"
-          change="+8.2%"
-          trend="up"
-          color="blue"
-        />
-        <MetricCard
-          title="Total Expenses"
-          value="$963.30"
-          change="-2.1%"
-          trend="down"
-          color="red"
-        />
-      </div>
-      
-      <div className="grid lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Transactions</CardTitle>
-            <CardDescription>Your latest trading activities</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <TransactionItem
-                description="Sold vegetables at market"
-                amount="+$45.00"
-                time="2 hours ago"
-                type="income"
-              />
-              <TransactionItem
-                description="Transportation costs"
-                amount="-$12.50"
-                time="4 hours ago"
-                type="expense"
-              />
-              <TransactionItem
-                description="Fruit sales"
-                amount="+$78.20"
-                time="6 hours ago"
-                type="income"
-              />
+const Footer = () => (
+  <footer className="bg-slate-900 text-white py-12">
+    <div className="container mx-auto px-4">
+      <div className="grid md:grid-cols-4 gap-8">
+        <div>
+          <div className="flex items-center space-x-2 mb-4">
+            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-green-600 rounded-lg flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 text-white" />
             </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Add new entries with ease</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4">
-              <Button className="w-full bg-green-600 hover:bg-green-700" size="lg">
-                <Mic className="w-5 h-5 mr-2" />
-                Record Income
-              </Button>
-              <Button className="w-full bg-red-600 hover:bg-red-700" size="lg">
-                <Camera className="w-5 h-5 mr-2" />
-                Scan Receipt
-              </Button>
-              <Button variant="outline" className="w-full" size="lg">
-                Manual Entry
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+            <span className="text-xl font-bold">VibeLedger</span>
+          </div>
+          <p className="text-slate-400">
+            Empowering small traders with smart financial tracking.
+          </p>
+        </div>
+        <div>
+          <h4 className="font-semibold mb-4">Product</h4>
+          <ul className="space-y-2 text-slate-400">
+            <li><a href="#" className="hover:text-white">Features</a></li>
+            <li><a href="#" className="hover:text-white">Pricing</a></li>
+            <li><a href="#" className="hover:text-white">API</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 className="font-semibold mb-4">Company</h4>
+          <ul className="space-y-2 text-slate-400">
+            <li><a href="#" className="hover:text-white">About</a></li>
+            <li><a href="#" className="hover:text-white">Blog</a></li>
+            <li><a href="#" className="hover:text-white">Careers</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 className="font-semibold mb-4">Support</h4>
+          <ul className="space-y-2 text-slate-400">
+            <li><a href="#" className="hover:text-white">Help Center</a></li>
+            <li><a href="#" className="hover:text-white">Contact</a></li>
+            <li><a href="#" className="hover:text-white">Privacy</a></li>
+          </ul>
+        </div>
+      </div>
+      <div className="border-t border-slate-800 mt-8 pt-8 text-center text-slate-400">
+        <p>&copy; 2024 VibeLedger. All rights reserved.</p>
       </div>
     </div>
-  </div>
+  </footer>
 );
 
-const DashboardHeader = () => (
+const Dashboard = ({ onShowTransactionForm, showTransactionForm, onCloseTransactionForm }: {
+  onShowTransactionForm: () => void;
+  showTransactionForm: boolean;
+  onCloseTransactionForm: () => void;
+}) => {
+  const { user, signOut } = useAuth();
+
+  return (
+    <div className="min-h-screen bg-slate-50">
+      <DashboardHeader onSignOut={signOut} />
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">Welcome back, {user?.user_metadata?.full_name || 'Trader'}!</h1>
+          <p className="text-slate-600">Here's your trading performance today.</p>
+        </div>
+        
+        <MetricsCards />
+        
+        <div className="grid lg:grid-cols-2 gap-6">
+          <div>
+            <RecentTransactions />
+          </div>
+          
+          <div>
+            {showTransactionForm ? (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-semibold">Add Transaction</h2>
+                  <Button variant="outline" onClick={onCloseTransactionForm}>Cancel</Button>
+                </div>
+                <TransactionForm onSuccess={onCloseTransactionForm} />
+              </div>
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Quick Actions</CardTitle>
+                  <CardDescription>Add new entries with ease</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4">
+                    <Button 
+                      className="w-full bg-blue-600 hover:bg-blue-700" 
+                      size="lg"
+                      onClick={onShowTransactionForm}
+                    >
+                      <Plus className="w-5 h-5 mr-2" />
+                      Add Transaction
+                    </Button>
+                    <Button className="w-full bg-green-600 hover:bg-green-700" size="lg">
+                      <Mic className="w-5 h-5 mr-2" />
+                      Record with Voice (Coming Soon)
+                    </Button>
+                    <Button className="w-full bg-purple-600 hover:bg-purple-700" size="lg">
+                      <Camera className="w-5 h-5 mr-2" />
+                      Scan Receipt (Coming Soon)
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const DashboardHeader = ({ onSignOut }: { onSignOut: () => void }) => (
   <header className="bg-white border-b border-slate-200">
     <div className="container mx-auto px-4 py-4 flex justify-between items-center">
       <div className="flex items-center space-x-2">
@@ -273,66 +334,75 @@ const DashboardHeader = () => (
         <a href="#" className="text-slate-600 hover:text-slate-900">Reports</a>
         <a href="#" className="text-slate-600 hover:text-slate-900">Settings</a>
       </nav>
-      <Button variant="outline" size="sm">
-        Profile
+      <Button variant="outline" size="sm" onClick={onSignOut}>
+        Sign Out
       </Button>
     </div>
   </header>
 );
 
-const MetricCard = ({ title, value, change, trend, color }: {
+const Features = () => (
+  <section id="features" className="py-20 bg-white">
+    <div className="container mx-auto px-4">
+      <div className="text-center mb-16">
+        <h2 className="text-4xl font-bold text-slate-900 mb-4">
+          Everything You Need to Succeed
+        </h2>
+        <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+          Built specifically for small traders who want to maximize profits and minimize time spent on bookkeeping.
+        </p>
+      </div>
+      
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <FeatureCard
+          icon={<Shield className="w-6 h-6" />}
+          title="Bank-Level Security"
+          description="Your financial data is encrypted and protected with enterprise-grade security."
+          color="blue"
+        />
+        <FeatureCard
+          icon={<Globe className="w-6 h-6" />}
+          title="Multi-Language Support"
+          description="Available in English and Swahili with localized voice commands."
+          color="green"
+        />
+        <FeatureCard
+          icon={<Users className="w-6 h-6" />}
+          title="Team Collaboration"
+          description="Share access with partners or accountants for seamless collaboration."
+          color="purple"
+        />
+      </div>
+    </div>
+  </section>
+);
+
+const FeatureCard = ({ icon, title, description, color }: {
+  icon: React.ReactNode;
   title: string;
-  value: string;
-  change: string;
-  trend: 'up' | 'down';
-  color: 'green' | 'blue' | 'red';
+  description: string;
+  color: 'blue' | 'green' | 'purple';
 }) => {
   const colorClasses = {
-    green: 'text-green-600',
-    blue: 'text-blue-600',
-    red: 'text-red-600'
+    blue: 'bg-blue-100 text-blue-600',
+    green: 'bg-green-100 text-green-600',
+    purple: 'bg-purple-100 text-purple-600'
   };
 
   return (
-    <Card>
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-slate-600 text-sm font-medium">{title}</p>
-            <p className={`text-2xl font-bold ${colorClasses[color]}`}>{value}</p>
-          </div>
-          <div className="flex items-center space-x-1">
-            {trend === 'up' ? (
-              <ArrowUp className="w-4 h-4 text-green-500" />
-            ) : (
-              <ArrowDown className="w-4 h-4 text-red-500" />
-            )}
-            <span className={`text-sm font-medium ${trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>
-              {change}
-            </span>
-          </div>
+    <Card className="border-slate-200 hover:shadow-lg transition-shadow duration-300">
+      <CardHeader>
+        <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 ${colorClasses[color]}`}>
+          {icon}
         </div>
+        <CardTitle className="text-slate-900">{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <CardDescription className="text-slate-600">{description}</CardDescription>
       </CardContent>
     </Card>
   );
 };
-
-const TransactionItem = ({ description, amount, time, type }: {
-  description: string;
-  amount: string;
-  time: string;
-  type: 'income' | 'expense';
-}) => (
-  <div className="flex items-center justify-between py-2">
-    <div>
-      <p className="font-medium text-slate-900">{description}</p>
-      <p className="text-sm text-slate-500">{time}</p>
-    </div>
-    <span className={`font-semibold ${type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-      {amount}
-    </span>
-  </div>
-);
 
 const Footer = () => (
   <footer className="bg-slate-900 text-white py-12">
