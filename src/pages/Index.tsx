@@ -235,15 +235,14 @@ const Footer = () => (
         <div>
           <h4 className="font-semibold mb-4">Product</h4>
           <ul className="space-y-2 text-slate-400">
-            <li><a href="#" className="hover:text-white">Features</a></li>
-            <li><a href="#" className="hover:text-white">Pricing</a></li>
-            <li><a href="#" className="hover:text-white">API</a></li>
+            <li><Link to="/pricing" className="hover:text-white">Pricing</Link></li>
+            <li><a href="#features" className="hover:text-white">Features</a></li>
           </ul>
         </div>
         <div>
           <h4 className="font-semibold mb-4">Company</h4>
           <ul className="space-y-2 text-slate-400">
-            <li><a href="#" className="hover:text-white">About</a></li>
+            <li><Link to="/about" className="hover:text-white">About</Link></li>
             <li><a href="#" className="hover:text-white">Blog</a></li>
             <li><a href="#" className="hover:text-white">Careers</a></li>
           </ul>

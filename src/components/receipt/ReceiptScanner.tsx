@@ -33,13 +33,16 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({ onScanResult }) 
       reader.onloadend = async () => {
         const base64Image = (reader.result as string).split(',')[1];
         
-        // Simulate OCR processing for now
+        // For now, simulate OCR processing with mock data
+        // In a real implementation, you would call an OCR service
         setTimeout(() => {
           const mockData = {
             amount: Math.floor(Math.random() * 100) + 10,
             description: "Scanned receipt - Office supplies",
             category: "supplies",
-            type: "expense"
+            type: "expense",
+            merchant: "Local Store",
+            date: new Date().toISOString().split('T')[0]
           };
           
           onScanResult(mockData);

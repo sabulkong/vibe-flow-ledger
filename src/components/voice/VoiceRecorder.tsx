@@ -79,6 +79,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onTranscription })
       };
       reader.readAsDataURL(audioBlob);
     } catch (error) {
+      console.error('Voice transcription error:', error);
       toast({
         title: "Error",
         description: "Failed to process audio. Please try again.",
