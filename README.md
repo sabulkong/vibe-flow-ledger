@@ -2,7 +2,7 @@
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/a9eb8e94-cc0a-4e96-a23e-95ae2f73881e
+**URL**: https://vibe-flow-ledger.lovable.app/
 
 ## How can I edit this code?
 
